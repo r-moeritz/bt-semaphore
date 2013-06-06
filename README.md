@@ -13,7 +13,7 @@ git clone https://github.com/ralph-moeritz/bt-semaphore
 
 ### Usage
 
-There are only four functions of interest at the moment:
+There are only five functions of interest at the moment:
 
  - `make-semaphore` creates a semaphore instance
  - `semaphore-count` returns the current count of the semaphore
