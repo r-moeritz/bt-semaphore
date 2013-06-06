@@ -21,6 +21,7 @@ There are only four functions of interest at the moment:
    count > 0)
  - `signal-semaphore` increments the semaphore & wakes any threads blocked by a
    call to `wait-on-semaphore`
+ - `semaphore-name` is an accessor for the semaphore's name slot
 
 To illustrate, here's a tiny example:
 
