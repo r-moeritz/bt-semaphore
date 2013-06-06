@@ -42,7 +42,7 @@ To illustrate, here's a tiny example:
 
 ## Status
 
-The basics are done but it's far from being a replacement for `bt-thread:semaphore`.
+The basics are done but it's far from being a replacement for `sb-thread:semaphore`.
 
 ## License
 
