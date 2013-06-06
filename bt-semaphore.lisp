@@ -2,7 +2,8 @@
 
 (defpackage #:bt-semaphore
   (:use #:cl #:bordeaux-threads)
-  (:export #:make-semaphore #:signal-semaphore #:wait-on-semaphore #:semaphore-count))
+  (:export #:make-semaphore #:signal-semaphore #:wait-on-semaphore 
+           #:semaphore-count #:semaphore-name))
 
 (in-package #:bt-semaphore)
 
@@ -15,7 +16,7 @@
    (condvar :initform (bordeaux-threads:make-condition-variable))
    (count   :initarg  :count)
    (name    :initarg  :name
-            :accessor :semaphore-name)))
+            :accessor semaphore-name)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;; generic functions ;;
