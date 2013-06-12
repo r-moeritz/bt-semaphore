@@ -13,7 +13,7 @@ git clone https://github.com/ralph-moeritz/bt-semaphore
 
 ### Usage
 
-There are only five functions of interest at the moment:
+There are only six functions of interest at the moment:
 
  - `make-semaphore` creates a semaphore instance
  - `semaphore-count` returns the current count of the semaphore
@@ -22,6 +22,7 @@ There are only five functions of interest at the moment:
  - `signal-semaphore` increments the semaphore & wakes any threads blocked by a
    call to `wait-on-semaphore`
  - `semaphore-name` is an accessor for the semaphore's name slot
+ - `try-semaphore` decrements the semaphore without blocking
 
 To illustrate, here's a tiny example:
 
@@ -29,21 +30,27 @@ To illustrate, here's a tiny example:
 (ql:quickload 'bt-semaphore)
 
 (defvar sem (bt-semaphore:make-semaphore))
+(defvar lock (bt-semaphore:make-lock))
 (defvar num 0)
 
-(bordeaux-threads:make-thread
-          (lambda ()
-            (bt-semaphore:wait-on-semaphore sem)
-            (setf num 42)))
+;; Create 10 threads, each waiting on the semaphore.
+(dotimes (_ 10)
+  (bordeaux-threads:make-thread
+   (lambda ()
+     (bt-semaphore:wait-on-semaphore sem)
+     (bordeaux-threads:with-lock-held (lock)
+       (incf num)))))
 
-(bt-semaphore:signal-semaphore sem)
+;; Wake 5 of them.
+(bt-semaphore:signal-semaphore sem 5)
 
-(princ num)
+(princ num) ;; prints 5
 ```
 
 ## Status
 
-The basics are done but it's far from being a replacement for `sb-thread:semaphore`.
+The basics are done. It's not yet a replacement for `SB-THREAD:SEMAPHORE`, but
+we're getting there.
 
 ## License
 
