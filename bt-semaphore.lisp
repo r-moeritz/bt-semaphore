@@ -3,7 +3,7 @@
 (defpackage #:bt-semaphore
   (:use #:cl #:bordeaux-threads)
   (:export #:make-semaphore #:signal-semaphore #:wait-on-semaphore 
-           #:semaphore-count #:semaphore-name))
+           #:semaphore-count #:semaphore-name #:try-semaphore))
 
 (in-package #:bt-semaphore)
 
@@ -23,17 +23,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;
 
 (defgeneric signal-semaphore (instance &optional n)
-  (:documentation "Increment the count of the semaphore instance by n. If there
-  are threads waiting on this semaphore, then at most n (but at least one) of
-  them are woken up."))
+  (:documentation "Increments the count of the semaphore instance by n. If
+  there are threads waiting on this semaphore, then at least n of them are
+  woken up."))
 
 (defgeneric wait-on-semaphore (instance)
-  (:documentation "Decrement the count of the semaphore instance if the count
+  (:documentation "Decrements the count of the semaphore instance if the count
   would not be negative, else blocks until the semaphore can be
-  decremented. Returns t on success.."))
+  decremented. Returns t on success."))
 
 (defgeneric semaphore-count (instance)
   (:documentation "Returns the current count of the semaphore instance."))
+
+(defgeneric try-semaphore (instance &optional n)
+  (:documentation "Try to decrement the count of semaphore by n. Returns nil if
+  the count were to become negative, otherwise returns t."))
 
 ;;;;;;;;;;;;;
 ;; methods ;;
@@ -44,8 +48,9 @@
                (condvar condvar)
                (count count)) instance
       (bordeaux-threads:with-lock-held (lock)
-        (setf count (+ count n))
-        (bordeaux-threads:condition-notify condvar))))
+        (dotimes (_ n)
+          (incf count)
+          (bordeaux-threads:condition-notify condvar)))))
 
 (defmethod wait-on-semaphore ((instance semaphore))
   (with-slots ((lock lock)
@@ -63,6 +68,16 @@
                (count count)) instance
     (bordeaux-threads:with-lock-held (lock)
       count)))
+
+(defmethod try-semaphore ((instance semaphore) &optional (n 1))
+  (with-slots ((lock lock)
+               (count count)) instance
+    (bordeaux-threads:with-lock-held (lock)
+      (if (< (- count n) 0)
+          nil
+          (progn 
+            (setf count (- count n))
+            t)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; helper functions ;;
