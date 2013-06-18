@@ -12,8 +12,8 @@
 ;;;;;;;;;;;;;;;;;;;;;
 
 (defclass semaphore ()
-  ((lock    :initform (bordeaux-threads:make-lock))
-   (condvar :initform (bordeaux-threads:make-condition-variable))
+  ((lock    :initform (bt:make-lock))
+   (condvar :initform (bt:make-condition-variable))
    (count   :initarg  :count)
    (name    :initarg  :name
             :accessor semaphore-name)))
@@ -47,32 +47,32 @@
   (with-slots ((lock lock)
                (condvar condvar)
                (count count)) instance
-      (bordeaux-threads:with-lock-held (lock)
+      (bt:with-lock-held (lock)
         (dotimes (_ n)
           (incf count)
-          (bordeaux-threads:condition-notify condvar)))))
+          (bt:condition-notify condvar)))))
 
 (defmethod wait-on-semaphore ((instance semaphore))
   (with-slots ((lock lock)
                (condvar condvar)
                (count count)) instance
-    (bordeaux-threads:with-lock-held (lock)
+    (bt:with-lock-held (lock)
       (loop
          until (> count 0)
-         do (bordeaux-threads:condition-wait condvar lock))
+         do (bt:condition-wait condvar lock))
       (decf count)))
   t)
 
 (defmethod semaphore-count ((instance semaphore))
   (with-slots ((lock lock)
                (count count)) instance
-    (bordeaux-threads:with-lock-held (lock)
+    (bt:with-lock-held (lock)
       count)))
 
 (defmethod try-semaphore ((instance semaphore) &optional (n 1))
   (with-slots ((lock lock)
                (count count)) instance
-    (bordeaux-threads:with-lock-held (lock)
+    (bt:with-lock-held (lock)
       (if (< (- count n) 0)
           nil
           (progn 
