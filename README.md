@@ -19,7 +19,7 @@ There are only six functions of interest at the moment:
  - `semaphore-count` returns the current count of the semaphore
  - `wait-on-semaphore` blocks until the semaphore can be decremented (ie. its
    count > 0)
- - `signal-semaphore` increments the semaphore & wakes any threads blocked by a
+ - `signal-semaphore` increments the semaphore & wakes n threads blocked by a
    call to `wait-on-semaphore`
  - `semaphore-name` is an accessor for the semaphore's name slot
  - `try-semaphore` decrements the semaphore without blocking
@@ -29,22 +29,20 @@ To illustrate, here's a tiny example:
 ```common-lisp
 (ql:quickload 'bt-semaphore)
 
-(defvar sem (bt-semaphore:make-semaphore))
-(defvar lock (bt-semaphore:make-lock))
+(defvar sem (bt-sem:make-semaphore))
+(defvar lock (bt:make-lock))
 (defvar num 0)
 
 ;; Create 10 threads, each waiting on the semaphore.
 (dotimes (_ 10)
-  (bordeaux-threads:make-thread
+  (bt:make-thread
    (lambda ()
-     (bt-semaphore:wait-on-semaphore sem)
-     (bordeaux-threads:with-lock-held (lock)
+     (bt-sem:wait-on-semaphore sem)
+     (bt:with-lock-held (lock)
        (incf num)))))
 
-;; Wake 5 of them.
-(bt-semaphore:signal-semaphore sem 5)
-
-(princ num) ;; prints 5
+(bt-sem:signal-semaphore sem 5) ;; wake 5 of them
+num                             ;; evaluates to 5
 ```
 
 ## Status

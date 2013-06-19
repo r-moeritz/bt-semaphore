@@ -1,9 +1,4 @@
-;;;; bt-semaphore.lisp
-
-(defpackage #:bt-semaphore
-  (:use #:cl #:bordeaux-threads)
-  (:export #:make-semaphore #:signal-semaphore #:wait-on-semaphore 
-           #:semaphore-count #:semaphore-name #:try-semaphore))
+;;;; semaphore.lisp
 
 (in-package #:bt-semaphore)
 
@@ -16,7 +11,8 @@
    (condvar :initform (bt:make-condition-variable))
    (count   :initarg  :count)
    (name    :initarg  :name
-            :accessor semaphore-name)))
+            :accessor semaphore-name)
+   (waiting :initform 0)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;; generic functions ;;
@@ -24,8 +20,7 @@
 
 (defgeneric signal-semaphore (instance &optional n)
   (:documentation "Increments the count of the semaphore instance by n. If
-  there are threads waiting on this semaphore, then at least n of them are
-  woken up."))
+  there are threads waiting on this semaphore, then n of them are woken up."))
 
 (defgeneric wait-on-semaphore (instance)
   (:documentation "Decrements the count of the semaphore instance if the count
@@ -46,20 +41,24 @@
 (defmethod signal-semaphore ((instance semaphore) &optional (n 1))
   (with-slots ((lock lock)
                (condvar condvar)
-               (count count)) instance
+               (count count)
+               (waiting waiting)) instance
       (bt:with-lock-held (lock)
-        (dotimes (_ n)
-          (incf count)
+        (setf count (+ count n))
+        (dotimes (_ waiting)
           (bt:condition-notify condvar)))))
 
 (defmethod wait-on-semaphore ((instance semaphore))
   (with-slots ((lock lock)
                (condvar condvar)
-               (count count)) instance
+               (count count)
+               (waiting waiting)) instance
     (bt:with-lock-held (lock)
+      (incf waiting)
       (loop
          until (> count 0)
          do (bt:condition-wait condvar lock))
+      (decf waiting)
       (decf count)))
   t)
 

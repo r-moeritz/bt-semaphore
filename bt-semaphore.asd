@@ -5,4 +5,10 @@
   :author "Ralph Möritz"
   :license "MIT"
   :depends-on (#:bordeaux-threads)
-  :components ((:file "bt-semaphore")))
+  :serial t
+  :components
+  ((:module "src"
+            :components
+            ((:file "package")
+             (:file "semaphore")))))
+
