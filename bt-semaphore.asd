@@ -1,14 +1,34 @@
-;;;; bt-semaphore.asd
+#|
+  This file is a part of bt-semaphore project.
+  Copyright (c) 2013 Ralph Möritz (ralph.moeritz@outlook.com)
+|#
 
-(asdf:defsystem #:bt-semaphore
-  :description "A simple semaphore class for bordeaux-threads inspired by SBCL's semaphore."
+(in-package :cl-user)
+(defpackage bt-semaphore-asd
+  (:use :cl :asdf))
+(in-package :bt-semaphore-asd)
+
+(defsystem bt-semaphore
+  :version "0.5"
   :author "Ralph Möritz"
   :license "MIT"
-  :depends-on (#:bordeaux-threads)
-  :serial t
-  :components
-  ((:module "src"
-            :components
-            ((:file "package")
-             (:file "semaphore")))))
-
+  :depends-on (:bordeaux-threads)
+  :components ((:module "src"
+                :serial t
+                :components
+                ((:file "package")
+                 (:file "semaphore"))))
+  :description "A simple semaphore class for bordeaux-threads inspired by SBCL's semaphore."
+  :long-description
+  #.(with-open-file (stream (merge-pathnames
+                             #p"README.md"
+                             (or *load-pathname* *compile-file-pathname*))
+                            :if-does-not-exist nil
+                            :direction :input)
+      (when stream
+        (let ((seq (make-array (file-length stream)
+                               :element-type 'character
+                               :fill-pointer t)))
+          (setf (fill-pointer seq) (read-sequence seq stream))
+          seq)))
+  :in-order-to ((test-op (load-op bt-semaphore-test))))

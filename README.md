@@ -2,16 +2,14 @@
 
 A simple semaphore class for bordeaux-threads inspired by SBCL's semaphore.
 
-## Usage
-
-### Installation
+## Installation
 
 ```
 cd ~/quicklisp/local-projects
 git clone https://github.com/ralph-moeritz/bt-semaphore
 ```
 
-### Usage
+## Usage
 
 There are only six functions of interest at the moment:
 
@@ -49,6 +47,10 @@ num                             ;; evaluates to 5
 
 The basics are done. It's not yet a replacement for `SB-THREAD:SEMAPHORE`, but
 we're getting there.
+
+## Author
+
+* Ralph Möritz (ralph.moeritz@outlook.com)
 
 ## License
 
