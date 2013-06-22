@@ -10,6 +10,7 @@
   (:export :make-semaphore
            :signal-semaphore
            :wait-on-semaphore
+           :try-semaphore
            :semaphore-count
-           :semaphore-name
-           :try-semaphore))
+           :semaphore-waiters
+           :semaphore-name))

@@ -6,5 +6,6 @@
 (in-package :cl-user)
 (defpackage bt-semaphore-test
   (:use :cl
+        :bordeaux-threads
         :bt-semaphore
         :clunit))

@@ -5,41 +5,123 @@
 
 (in-package :bt-semaphore-test)
 
-;;;; Define test suites
+;;; helper functions/macros
+
+(defmacro assert-semaphore-count-eql ((semaphore-sym count &optional (init-count 0 init-count-supplied-p))
+                                      &body body)
+  (labels ((create-semaphore ()
+           (if init-count-supplied-p
+               (make-semaphore :count init-count)
+               (make-semaphore))))
+    `(let ((,semaphore-sym ,(create-semaphore)))
+       ,@body
+       (assert-eql ,count (semaphore-count ,semaphore-sym)))))
+
+;;; make-semaphore suite
 
 (defsuite make-semaphore-suite ())
-(defsuite signal-semaphore-suite ())
-(defsuite wait-on-semaphore-suite ())
-(defsuite try-semaphore-suite ())
-
-;;;; Define tests
-
-;; make-semaphore
-
-(defun assert-semaphore-count-eql (count &optional init-semaphore-count)
-  (let ((sem (if init-semaphore-count
-                 (make-semaphore :count count)
-                 (make-semaphore))))
-    (assert-eql count (semaphore-count sem))))
-
-(defun assert-semaphore-name-equal (name &optional init-semaphore-name)
-  (let ((sem (if init-semaphore-name
-                 (make-semaphore :name name)
-                 (make-semaphore))))
-    (assert-equal name (semaphore-name sem))))
 
 (deftest make-semaphore-sans-count (make-semaphore-suite)
-  (assert-semaphore-count-eql 0))
+  (assert-semaphore-count-eql (sem 0)))
 
-(deftest make-semaphore-with-count-1 (make-semaphore-suite)
-  (assert-semaphore-count-eql 1 t))
+(deftest make-semaphore-with-count=1 (make-semaphore-suite)
+  (assert-semaphore-count-eql (sem 1 1)))
+
+(deftest make-semaphore-with-count=-1 (make-semaphore-suite)
+  (assert-semaphore-count-eql (sem -1 -1)))
 
 (deftest make-unnamed-semaphore (make-semaphore-suite)
-  (assert-semaphore-name-equal nil))
+  (let ((sem (make-semaphore)))
+    (assert-equal nil (semaphore-name sem))))
 
 (deftest make-named-semaphore (make-semaphore-suite)
-  (assert-semaphore-name-equal "sem" t))
+  (let ((sem (make-semaphore :name "sem")))
+    (assert-equal "sem" (semaphore-name sem))))
 
-;;;; Run tests
+;;; signal-semaphore suite
 
-(run-suite 'make-semaphore-suite :use-debugger t)
+(defsuite signal-semaphore-suite ())
+
+(deftest signal-semaphore-sans-n (signal-semaphore-suite)
+  (assert-semaphore-count-eql (sem 1)
+    (signal-semaphore sem)))
+
+(deftest signal-semaphore-with-n=2 (signal-semaphore-suite)
+  (let ((n 2))
+    (assert-semaphore-count-eql (sem n)
+      (signal-semaphore sem n))))
+
+(deftest signal-semaphore-with-n=-2 (signal-semaphore-suite)
+  (let ((n -2))
+    (assert-semaphore-count-eql (sem n)
+      (signal-semaphore sem n))))
+
+;;; wait-on-semaphore suite
+
+(defsuite wait-on-semaphore-suite ())
+
+(deftest wait-on-semaphore-sans-count (wait-on-semaphore-suite)
+  (defparameter *sem* (make-semaphore))
+  (make-thread
+   (lambda ()
+     (wait-on-semaphore *sem*)))
+  (sleep 0.5)
+  (assert-eql 1 (semaphore-waiters *sem*)))
+
+(deftest wait-on-semaphore-with-count=-1 (wait-on-semaphore-suite)
+  (defparameter *sem* (make-semaphore :count -1))
+  (make-thread
+   (lambda ()
+     (wait-on-semaphore *sem*)))
+  (sleep 0.5)
+  (assert-eql 1 (semaphore-waiters *sem*)))
+
+(deftest wait-on-semaphore-with-count=1 (wait-on-semaphore-suite)
+  (defparameter *sem* (make-semaphore :count 1))
+  (make-thread
+   (lambda ()
+     (wait-on-semaphore *sem*)))
+  (sleep 0.5)
+  (assert-eql 0 (semaphore-waiters *sem*)))
+
+(deftest wait-twice-on-semaphore-sans-count (wait-on-semaphore-suite)
+  (defparameter *sem* (make-semaphore))
+  (loop
+     repeat 2
+     do (make-thread
+         (lambda ()
+           (wait-on-semaphore *sem*))))
+  (sleep 0.5)
+  (assert-eql 2 (semaphore-waiters *sem*)))
+
+(deftest wait-on-semaphore-sans-count-with-timeout (wait-on-semaphore-suite)
+  (let ((sem (make-semaphore)))
+    (wait-on-semaphore sem :timeout 0.5)
+    (assert-eql 0 (semaphore-waiters sem))))
+
+;;; try-semaphore suite
+
+(defsuite try-semaphore-suite ())
+
+(deftest try-semaphore-with-count=1-sans-n (try-semaphore-suite)
+  (assert-semaphore-count-eql (sem 0 1)
+    (try-semaphore sem)))
+
+(deftest try-semaphore-with-count=1-n=2 (try-semaphore-suite)
+  (assert-semaphore-count-eql (sem 1 1)
+    (try-semaphore sem 2)))
+
+(deftest try-semaphore-with-count=2-n=2 (try-semaphore-suite)
+  (assert-semaphore-count-eql (sem 0 2)
+    (try-semaphore sem 2)))
+
+(deftest try-semaphore-sans-count-sans-n (try-semaphore-suite)
+  (assert-semaphore-count-eql (sem 0)
+    (try-semaphore sem)))
+
+;;; run test suites
+
+(run-suite 'make-semaphore-suite)
+(run-suite 'signal-semaphore-suite)
+(run-suite 'try-semaphore-suite)
+(run-suite 'wait-on-semaphore-suite)
