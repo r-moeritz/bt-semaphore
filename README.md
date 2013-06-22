@@ -11,36 +11,54 @@ git clone https://github.com/ralph-moeritz/bt-semaphore
 
 ## Usage
 
-There are only six functions of interest at the moment:
+There are seven functions of interest at the moment:
 
  - `make-semaphore` creates a semaphore instance
- - `semaphore-count` returns the current count of the semaphore
  - `wait-on-semaphore` blocks until the semaphore can be decremented (ie. its
-   count > 0)
- - `signal-semaphore` increments the semaphore & wakes n threads blocked by a
-   call to `wait-on-semaphore`
- - `semaphore-name` is an accessor for the semaphore's name slot
+   count > 0) or the timeout has expired
+ - `signal-semaphore` increments the semaphore & wakes n waiting threads
  - `try-semaphore` decrements the semaphore without blocking
+ - `semaphore-count` returns the current count of the semaphore
+ - `semaphore-waiters` returns the number of threads waiting on semaphore
+ - `semaphore-name` is an accessor for the semaphore's name slot
 
 To illustrate, here's a tiny example:
 
 ```common-lisp
 (ql:quickload 'bt-semaphore)
 
-(defvar sem (bt-sem:make-semaphore))
-(defvar lock (bt:make-lock))
-(defvar num 0)
+(defun semaphore-demo ()
+  (defparameter sem (bt-sem:make-semaphore))
+  (defparameter lock (bt:make-lock))
+  (defparameter num 0)
+  (format t "num is ~d~%~%" num)
+  
+  (format t "spawn 10 threads with 5s timeout~%")
+  (loop
+    repeat 10
+    do (bt:make-thread
+         (lambda ()
+           (if (bt-sem:wait-on-semaphore sem :timeout 5)
+             (bt:with-lock-held (lock)
+               (incf num))))))
+  (sleep 0.5)
+  (format t "there are ~d waiting threads~%~%" (bt-sem:semaphore-waiters sem))
+  
+  (format t "signal 5 threads~%")
+  (bt-sem:signal-semaphore sem 5)
+  (sleep 0.5)
+  (format t "num is ~d~%" num)
+  (format t "there are ~d waiting threads~%~%" (bt-sem:semaphore-waiters sem))
 
-;; Create 10 threads, each waiting on the semaphore.
-(dotimes (_ 10)
-  (bt:make-thread
-   (lambda ()
-     (bt-sem:wait-on-semaphore sem)
-     (bt:with-lock-held (lock)
-       (incf num)))))
+  (format t "5s sleep~%")
+  (sleep 5)
+  (format t "num is ~d~%" num) 
+  (format t "there are ~d waiting threads~%~%" (bt-sem:semaphore-waiters sem))
 
-(bt-sem:signal-semaphore sem 5) ;; wake 5 of them
-num                             ;; evaluates to 5
+  (format t "stubbornly try to signal 5 threads~%")
+  (bt-sem:signal-semaphore sem 5)
+  (format t "num is ~d~%" num) 
+  (format t "there are ~d waiting threads~%" (bt-sem:semaphore-waiters sem)))
 ```
 
 ## Status
