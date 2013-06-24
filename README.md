@@ -25,7 +25,7 @@ There are seven functions of interest at the moment:
 To illustrate, here's a tiny example:
 
 ```common-lisp
-(ql:quickload 'bt-semaphore)
+(ql:quickload :bt-semaphore)
 
 (defun semaphore-demo ()
   (defparameter sem (bt-sem:make-semaphore))
@@ -61,10 +61,41 @@ To illustrate, here's a tiny example:
   (format t "there are ~d waiting threads~%" (bt-sem:semaphore-waiters sem)))
 ```
 
+Calling `SEMAPHORE-DEMO` at the REPL should produce the following output:
+
+```
+num is 0
+
+spawn 10 threads with 5s timeout
+there are 10 waiting threads
+
+signal 5 threads
+num is 5
+there are 5 waiting threads
+
+5s sleep
+num is 5
+there are 0 waiting threads
+
+stubbornly try to signal 5 threads
+num is 5
+there are 0 waiting threads
+NIL
+```
+
 ## Status
 
 The basics are done. It's not yet a replacement for `SB-THREAD:SEMAPHORE`, but
 we're getting there.
+
+You can run the test suites to verify that everything is working as it
+should by invoking `(ql:quickload :bt-semaphore-test)` or `(asdf:test-system
+:bt-semaphore)`.
+
+## Bugs
+
+I'm not aware of any bugs, but if you believe you've found one, please do
+[report it](https://github.com/ralph-moeritz/bt-semaphore/issues).
 
 ## Author
 
