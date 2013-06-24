@@ -37,7 +37,7 @@
   negative, else block until the semaphore can be decremented. Returns t on
   success. If timeout is given, it is the maximum number of seconds to wait. If
   the count cannot be decremented in that time, return nil."
-  (labels ((wait ()
+  (flet ((wait-on-semaphore ()
              (with-slots ((lock lock)
                           (condvar condvar)
                           (count count)
@@ -55,9 +55,9 @@
     (if timeout
         (handler-case
             (with-timeout (timeout)
-              (wait))
+              (wait-on-semaphore))
           (timeout ()))
-        (wait))))
+        (wait-on-semaphore))))
 
 (defmethod try-semaphore ((instance semaphore) &optional (n 1))
   "Try to decrement the count of semaphore by n. Returns nil if
