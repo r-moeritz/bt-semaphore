@@ -31,56 +31,58 @@ To illustrate, here's a tiny example:
   (defparameter sem (bt-sem:make-semaphore))
   (defparameter lock (bt:make-lock))
   (defparameter num 0)
-  (format t "num is ~d~%~%" num)
   
-  (format t "spawn 10 threads with 5s timeout~%")
+  (format t "spawn 20 threads with 4s timeout~%")
   (loop
-    repeat 10
+    repeat 20
     do (bt:make-thread
          (lambda ()
-           (if (bt-sem:wait-on-semaphore sem :timeout 5)
+           (if (bt-sem:wait-on-semaphore sem :timeout 4)
              (bt:with-lock-held (lock)
                (incf num))))))
-  (sleep 0.5)
+  (format t "num is ~d~%" num)
+  (sleep 0.33)
   (format t "there are ~d waiting threads~%~%" (bt-sem:semaphore-waiters sem))
-  
+
   (format t "signal 5 threads~%")
   (bt-sem:signal-semaphore sem 5)
-  (sleep 0.5)
-  (format t "num is ~d~%" num)
+  (sleep 0.33)
+  (bt:with-lock-held (lock)
+    (format t "num is ~d~%" num))
   (format t "there are ~d waiting threads~%~%" (bt-sem:semaphore-waiters sem))
 
-  (format t "5s sleep~%")
-  (sleep 5)
-  (format t "num is ~d~%" num) 
+  (format t "signal 10 threads~%")
+  (bt-sem:signal-semaphore sem 10)
+  (sleep 0.33)
+  (bt:with-lock-held (lock)
+    (format t "num is ~d~%" num))
   (format t "there are ~d waiting threads~%~%" (bt-sem:semaphore-waiters sem))
 
-  (format t "stubbornly try to signal 5 threads~%")
-  (bt-sem:signal-semaphore sem 5)
-  (format t "num is ~d~%" num) 
-  (format t "there are ~d waiting threads~%" (bt-sem:semaphore-waiters sem)))
+  (format t "4s sleep~%")
+  (sleep 4)
+  (bt:with-lock-held (lock)
+    (format t "num is ~d~%" num))
+  (format t "there are ~d waiting threads~%~%" (bt-sem:semaphore-waiters sem)))
 ```
 
 Calling `SEMAPHORE-DEMO` at the REPL should produce the following output:
 
 ```
+spawn 20 threads with 4s timeout
 num is 0
-
-spawn 10 threads with 5s timeout
-there are 10 waiting threads
+there are 20 waiting threads
 
 signal 5 threads
 num is 5
+there are 15 waiting threads
+
+signal 10 threads
+num is 15
 there are 5 waiting threads
 
-5s sleep
-num is 5
+4s sleep
+num is 15
 there are 0 waiting threads
-
-stubbornly try to signal 5 threads
-num is 5
-there are 0 waiting threads
-NIL
 ```
 
 ## Status
