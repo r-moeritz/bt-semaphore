@@ -9,7 +9,7 @@
 (in-package :bt-semaphore-asd)
 
 (defsystem bt-semaphore
-  :version "0.5"
+  :version "0.6.0"
   :author "Ralph Möritz"
   :license "MIT"
   :depends-on (:bordeaux-threads)

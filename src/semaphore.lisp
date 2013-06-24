@@ -16,15 +16,21 @@
 (defmethod signal-semaphore ((instance semaphore) &optional (n 1))
   "Increment the count of the semaphore instance by n. If there are threads
   waiting on this semaphore, then n of them are woken up."
-  (with-slots ((lock lock)
-               (condvar condvar)
-               (count count)
-               (waiters waiters)) instance
-    (with-lock-held (lock)
-      (setf count (+ count n))
-      (loop
-         repeat waiters
-         do (condition-notify condvar)))))
+  (flet ((signal-semaphore ()
+           (with-slots ((lock lock)
+                        (condvar condvar)
+                        (count count)
+                        (waiters waiters)) instance
+             (with-lock-held (lock)
+               (setf count (+ count n))
+               (loop
+                  repeat waiters
+                  do (condition-notify condvar))))))
+    #+sbcl (sb-sys:without-interrupts
+             (signal-semaphore))
+    #+ccl (ccl:without-interrupts
+            (signal-semaphore))
+    #-(or sbcl ccl) (signal-semaphore)))
 
 (defmethod wait-on-semaphore ((instance semaphore) &key timeout)
   "Decrement the count of the semaphore instance if the count would not be
