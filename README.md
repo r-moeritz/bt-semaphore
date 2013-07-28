@@ -4,6 +4,9 @@ A simple semaphore class for bordeaux-threads inspired by SBCL's semaphore.
 
 ## Installation
 
+`bt-semaphore` is available via [Quicklisp](http://www.quicklisp.org/beta/). You
+can also clone the Git repo if you prefer to use bleeding edge:
+
 ```
 cd ~/quicklisp/local-projects
 git clone https://github.com/ralph-moeritz/bt-semaphore
