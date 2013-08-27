@@ -104,7 +104,7 @@ I'm not aware of any bugs, but if you believe you've found one, please do
 
 ## Author
 
-* Ralph Möritz (ralph.moeritz@outlook.com)
+* Ralph Möritz (ralphmoritz@outlook.com)
 
 ## License
 
