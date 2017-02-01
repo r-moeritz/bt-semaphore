@@ -1,6 +1,6 @@
 #|
   This file is a part of bt-semaphore project.
-  Copyright (c) 2013 Ralph Möritz (ralph.moeritz@outlook.com)
+  Copyright (c) 2013 Ralph Moeritz (ralphmoritz@outlook.com)
 |#
 
 (in-package :bt-semaphore-test)

@@ -104,11 +104,11 @@ I'm not aware of any bugs, but if you believe you've found one, please do
 
 ## Author
 
-* Ralph Möritz (ralphmoritz@outlook.com)
+* Ralph Moeritz (ralphmoritz@outlook.com)
 
 ## License
 
-Copyright (c) Ralph Möritz 2013.
+Copyright (c) Ralph Moeritz 2013.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
