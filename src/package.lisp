@@ -6,7 +6,7 @@
 (in-package :cl-user)
 (defpackage :bt-semaphore
   (:nicknames :bt-sem)
-  (:use :cl :bordeaux-threads)
+  (:use :cl)
   (:export :make-semaphore
            :signal-semaphore
            :wait-on-semaphore

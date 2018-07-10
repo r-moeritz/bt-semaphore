@@ -6,8 +6,8 @@
 (in-package :bt-semaphore)
 
 (defclass semaphore ()
-  ((lock    :initform (make-lock))
-   (condvar :initform (make-condition-variable))
+  ((lock    :initform (bt:make-lock))
+   (condvar :initform (bt:make-condition-variable))
    (count   :initarg  :count)
    (waiters :initform 0)
    (name    :initarg  :name
@@ -21,11 +21,11 @@
                         (condvar condvar)
                         (count count)
                         (waiters waiters)) instance
-             (with-lock-held (lock)
+             (bt:with-lock-held (lock)
                (setf count (+ count n))
                (loop
                   repeat waiters
-                  do (condition-notify condvar))))))
+                  do (bt:condition-notify condvar))))))
     #+sbcl (sb-sys:without-interrupts
              (signal-semaphore))
     #+ccl (ccl:without-interrupts
@@ -42,21 +42,21 @@
                           (condvar condvar)
                           (count count)
                           (waiters waiters)) instance
-               (with-lock-held (lock)
+               (bt:with-lock-held (lock)
                  (unwind-protect
                       (progn
                         (incf waiters)
                         (loop
                            until (> count 0)
-                           do (condition-wait condvar lock))
+                           do (bt:condition-wait condvar lock))
                         (decf count))
                    (decf waiters))))
              t))
     (if timeout
         (handler-case
-            (with-timeout (timeout)
+            (bt:with-timeout (timeout)
               (wait-on-semaphore))
-          (timeout ()))
+          (bt:timeout ()))
         (wait-on-semaphore))))
 
 (defmethod try-semaphore ((instance semaphore) &optional (n 1))
@@ -64,7 +64,7 @@
   the count were to become negative, otherwise returns t."
   (with-slots ((lock lock)
                (count count)) instance
-    (with-lock-held (lock)
+    (bt:with-lock-held (lock)
       (if (< (- count n) 0)
           nil
           (progn 
@@ -75,14 +75,14 @@
   "Return the count of the semaphore."
   (with-slots ((lock lock)
                (count count)) instance
-    (with-lock-held (lock)
+    (bt:with-lock-held (lock)
       count)))
 
 (defmethod semaphore-waiters ((instance semaphore))
   "Return the number of threads waiting on the semaphore."
   (with-slots ((lock lock)
                (waiters waiters)) instance
-    (with-lock-held (lock)
+    (bt:with-lock-held (lock)
       waiters)))
 
 (defun make-semaphore (&key name (count 0))

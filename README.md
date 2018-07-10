@@ -1,11 +1,14 @@
 # bt-semaphore
 
 A simple semaphore class for bordeaux-threads inspired by SBCL's semaphore.
+ 
+**Obsolete!** bordeaux-threads has its own built-in semaphores since version
+0.8.6, so you should definitely use that instead of bt-semaphore.
 
 ## Installation
 
 `bt-semaphore` is available via [Quicklisp](http://www.quicklisp.org/beta/). You
-can also clone the Git repo if you prefer to use bleeding edge:
+can also clone the Git repo if you're curious:
 
 ```
 cd ~/quicklisp/local-projects
@@ -90,8 +93,8 @@ there are 0 waiting threads
 
 ## Status
 
-The basics are done. It's not yet a replacement for `SB-THREAD:SEMAPHORE`, but
-we're getting there.
+Working, but obsolete: bordeaux-threads has semaphore support since version 0.8.6.
+You should definitely be using that instead of bt-semaphore.
 
 You can run the test suites to verify that everything is working as it
 should by invoking `(ql:quickload :bt-semaphore-test)` or `(asdf:test-system
@@ -99,8 +102,7 @@ should by invoking `(ql:quickload :bt-semaphore-test)` or `(asdf:test-system
 
 ## Bugs
 
-I'm not aware of any bugs, but if you believe you've found one, please do
-[report it](https://github.com/rmoritz/bt-semaphore/issues).
+Found one? Report it [here](https://github.com/rmoritz/bt-semaphore/issues), thanks.
 
 ## Author
 

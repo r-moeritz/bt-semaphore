@@ -71,19 +71,19 @@
 
 (deftest wait-on-semaphore-sans-count (wait-on-semaphore-suite)
   (assert-semaphore-waiters-eql (*sem* 1)
-                                (make-thread
+                                (bt:make-thread
                                  (lambda ()
                                    (wait-on-semaphore *sem*)))))
 
 (deftest wait-on-semaphore-with-count=-1 (wait-on-semaphore-suite)
   (assert-semaphore-waiters-eql (*sem* 1 -1)
-                                (make-thread
+                                (bt:make-thread
                                  (lambda ()
                                    (wait-on-semaphore *sem*)))))
 
 (deftest wait-on-semaphore-with-count=1 (wait-on-semaphore-suite)
   (assert-semaphore-waiters-eql (*sem* 0 1)
-                                (make-thread
+                                (bt:make-thread
                                  (lambda ()
                                    (wait-on-semaphore *sem*)))))
 
@@ -91,7 +91,7 @@
   (assert-semaphore-waiters-eql (*sem* 2)
                                 (loop
                                    repeat 2
-                                   do (make-thread
+                                   do (bt:make-thread
                                        (lambda ()
                                          (wait-on-semaphore *sem*))))))
 
